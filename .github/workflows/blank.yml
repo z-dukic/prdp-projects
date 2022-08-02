@@ -51,6 +51,11 @@ jobs:
                 "id": "cloudhub-deploy",
                 "username": "${{ secrets.ANYPOINT_USERNAME }}",
                 "password": "${{ secrets.ANYPOINT_PASSWORD }}"
+            },
+            {
+                "id": "releases-ee",
+                "username": "${{ secrets.RELEASES_USERNAME }}",
+                "password": "${{ secrets.RELEASES_PASSWORD }}"
             }
             ]
           
@@ -60,7 +65,7 @@ jobs:
         
       - name: Stamp artifact file name with commit hash
         run: |
-          artifactName1=$(ls target/*.jar | head -1)
+          artifactName1=$(ls check-in-papi-app/target/*.jar | head -1)
           commitHash=$(git rev-parse --short "$GITHUB_SHA")
           artifactName2=$(ls target/*.jar | head -1 | sed "s/.jar/.$commitHash.jar/g")
           mv $artifactName1 $artifactName2
@@ -69,4 +74,4 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
             name: artifacts
-            path: target/*.jar
+            path: check-in-papi-app/target/*.jar
