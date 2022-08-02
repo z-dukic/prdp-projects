@@ -75,3 +75,51 @@ jobs:
         with:
             name: artifacts
             path: check-in-papi-app/target/*.jar
+            
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:    
+    - uses: actions/checkout@v3
+    - uses: actions/cache@v3
+      with:
+        path: ~/.m2/repository
+        key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          ${{ runner.os }}-maven-
+    - uses: actions/download-artifact@v3
+      with:
+        name: artifacts
+
+    - uses: s4u/maven-settings-action@v2.6.0
+      with:
+        servers: |
+          [{
+                "id": "anypoint-exchange-v3",
+                "username": "${{ secrets.ANYPOINT_USERNAME }}",
+                "password": "${{ secrets.ANYPOINT_PASSWORD }}"
+            },
+            {
+                "id": "cloudhub-deploy",
+                "username": "${{ secrets.ANYPOINT_USERNAME }}",
+                "password": "${{ secrets.ANYPOINT_PASSWORD }}"
+            },
+            {
+                "id": "releases-ee",
+                "username": "${{ secrets.RELEASES_USERNAME }}",
+                "password": "${{ secrets.RELEASES_PASSWORD }}"
+            }]
+    - name: Deploy to CloudHub
+      env:
+        AUTHOR: "Zoran Dukic"
+      run: |
+        artifactName=$(ls *.jar | head -1)
+        mvn deploy check-in-papi-app/pom.xml -DmuleDeploy \ 
+        -DapplicationName="checkin-cicd-zd90" \
+        -Denviroment="dev" \
+        -Dapi.id="18030099" \
+        -Dencrypt.key="${{secrets.ENCRYPT_KEY}}" \
+        -Dclient_id="{{secrets.AP_CLIENTID}}" \
+        -Dclient_secret="{{secrets.AP_CLIENTSECRET}}"
+        
+  
