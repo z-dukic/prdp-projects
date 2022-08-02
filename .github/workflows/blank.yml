@@ -76,6 +76,7 @@ jobs:
             name: artifacts
             path: check-in-papi-app/target/*.jar
             
+# Steps for executing the deployment against Cloudhub Anypoint Platform
   deploy:
     needs: build
     runs-on: ubuntu-latest
@@ -108,18 +109,19 @@ jobs:
                 "id": "releases-ee",
                 "username": "${{ secrets.RELEASES_USERNAME }}",
                 "password": "${{ secrets.RELEASES_PASSWORD }}"
-            }]
+            }
+          ]
+          
     - name: Deploy to CloudHub
       env:
         AUTHOR: "Zoran Dukic"
       run: |
         artifactName=$(ls *.jar | head -1)
-        mvn deploy check-in-papi-app/pom.xml -DmuleDeploy \ 
-        -DapplicationName="checkin-cicd-zd90" \
-        -Denviroment="dev" \
+        mvn --file check-in-papi-app/pom.xml deploy -DmuleDeploy \
+        -DapplicationName="checkin-cicd-zd101" \
+        -Denvironment="dev" \
         -Dapi.id="18030099" \
-        -Dencrypt.key="${{secrets.ENCRYPT_KEY}}" \
-        -Dclient_id="{{secrets.AP_CLIENTID}}" \
-        -Dclient_secret="{{secrets.AP_CLIENTSECRET}}"
-        
-  
+        -Dencrypt.key="${{ secrets.ENCRYPT_KEY }}" \
+        -Dclient_id="${{ secrets.AP_CLIENTID }}" \
+        -Dclient_secret="${{ secrets.AP_CLIENTSECRET }}"
+
